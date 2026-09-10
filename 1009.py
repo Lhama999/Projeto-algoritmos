@@ -1,0 +1,434 @@
+import pyxel
+import random
+def seta(x,y,clr):
+ pyxel.line(x,y+2,x+2,y+5,0)
+ pyxel.line(x,y+2,x+2,y-1,0)
+class inimigo:
+ def __init__(HP,DEF,ATK,DECK):
+  self.HP=HP
+  self.DEF=DEF
+  self.ATK=ATK
+  self.DECK=DECK
+class habilidade:
+ def __init__(self,numero,nome):
+  self.nome=nome
+  self.num=numero
+class combinacao:
+ def __init__(self,nome,alvo,dano,escudo,efeitoA,chanceA,stacksA,duracaoA,efeitoB,chanceB,stacksB,duracaoB,stat,tags):
+  self.nome=nome
+  self.alvo=alvo
+  self.dano=dano
+  self.escudo=escudo
+  self.efeitoA=efeitoA
+  self.chanceA=chanceA
+  self.stacksA=stacksA
+  self.duracaoA=duracaoA
+  self.efeitoB=efeitoB
+  self.chanceB=chanceB
+  self.stacksB=stacksB
+  self.duracaoB=duracaoB
+  self.stat=stat
+  self.tags=tags
+class arma:
+ def __init__(self,cartas):
+  self.cartas=cartas
+  self.premium=0
+class item:
+ def __init__(self,preco,imagem):
+  self.preco=preco
+  self.imagem=imagem
+  self.obtido=0
+class jogo:
+ def __init__(self):
+  pyxel.init(640,480,fps=120,title="AAAAAAAHH")
+  self.state="menu"
+  self.opcao=1
+  self.opcao_menu=1
+  self.room=0
+  self.x=60
+  self.sala1=0
+  self.sala2=0
+  self.sala3=0
+  self.max_carta=6
+  self.max_jogavel=2
+  self.armas=[espada,escudo,varinha,e_luz]
+  self.baralho=[]
+  self.turno=0
+  pyxel.run(self.update,self.draw)
+ def enter_loja(self):
+  self.room="loja"
+  self.produtos=[]
+  while len(self.produtos)<6:
+   self.aleatorio_a=random.randint(1,15)
+   self.produtos.append(self.aleatorio_a)
+ def enter_evento(self):
+  self.room="evento"
+  self.aleatorio_a=random.randint(1,20)
+  self.evento=self.aleatorio_a
+  self.opcao=0
+ def iniciar_turno(self):
+  self.opcao=0
+  self.usando=[]
+  self.turno="aliado"
+  self.baralho=[]
+  self.mao_real=[]
+  self.mao=[]
+  for i in self.armas:
+   for h in i.cartas:
+    self.baralho.append(h)
+  while len(self.mao_real)<self.max_carta:
+   self.aleatorio_i=random.randint(1,len(self.baralho))
+   self.aleatorio_i=self.aleatorio_i-1
+   self.mao_real.append(self.baralho[self.aleatorio_i])
+  for i in self.mao_real:
+   self.mao.append(i)
+ def enter_elite_battle(self):
+  self.room="batalha"
+  self.iniciar_turno()
+  self.enemy=[]
+  self.aleatorio_a=random.randint(0,1)
+  if self.aleatorio_a==0:
+   while len(self.enemy)<2:
+    self.aleatorio_b=random.randint(0,4)
+    self.enemy.append(inimigo_elite[self.aleatorio_b])
+  else:
+   self.aleatorio_a=random.randint(0,5)
+   self.enemy.append(inimigo[self.aleatorio_a])
+   self.aleatorio_b=random.randint(0,4)
+   self.enemy.append(inimigo_elite[self.aleatorio_b])
+   self.aleatorio_a=random.randint(0,5)
+   self.enemy.append(inimigo[self.aleatorio_a])
+ def enter_battle(self):
+  self.iniciar_turno()
+  self.enemy=[]
+  self.room="batalha"
+  self.aleatorio_a=random.randint(0,1)
+  if self.aleatorio_a==1:
+   self.x=3
+  else:
+   self.x=2
+  while len(self.enemy)<self.x:
+   self.aleatorio_a=random.randint(0,5)
+   self.enemy.append(inimigo[self.aleatorio_a])
+ def enter_map(self):#0.vazio 1.batalha,2.evento,3.loja,4.batalha elite, 5.aleatorio
+  self.vazio=0
+  self.opcao=0
+  self.sala1=random.randint(0,5)
+  if self.sala1==0:
+   self.vazio=1
+  if self.vazio==1:
+   self.sala2=random.randint(1,5)
+  else:
+   self.sala2=random.randint(0,5)
+  if self.sala2==0:
+   self.vazio=1
+  self.sala3=random.randint(0,5)
+  if self.vazio==1:
+   self.sala3=random.randint(1,5)
+ def update(self):
+  self.ret=0
+  if pyxel.btnp(pyxel.KEY_U):#tirar depois do teste    
+   self.state=="jogo"
+   self.enter_elite_battle()
+  if pyxel.btnp(pyxel.KEY_O):#A
+   self.state=="jogo"
+   self.enter_battle()
+  if pyxel.btnp(pyxel.KEY_KP_ENTER):
+   if self.state!=("menu" or "menu_jogo"):
+    self.state="menu_jogo"
+    self.opcao_menu=1
+   if self.state=="menu_jogo":
+    self.state=="jogo"
+  if self.state=="menu":
+   if self.opcao_menu<3 and pyxel.btnp(pyxel.KEY_S):
+    self.opcao_menu=self.opcao_menu+1
+   elif self.opcao_menu==3 and pyxel.btnp(pyxel.KEY_S):
+    self.opcao_menu=1
+   if self.opcao_menu>1 and pyxel.btnp(pyxel.KEY_W):
+    self.opcao_menu=self.opcao_menu-1
+   elif self.opcao_menu==1 and pyxel.btnp(pyxel.KEY_W):
+    self.opcao_menu=3
+   if pyxel.btnp(pyxel.KEY_RETURN):
+    if self.opcao_menu==1:
+     self.state="jogo"
+     self.room="mapa"
+     self.enter_map()
+    if self.opcao_menu==2:
+     self.state="opcoes"
+    if self.opcao_menu==3:
+     pyxel.quit()
+  if self.state=="menu_jogo":
+   if self.opcao_menu<3 and pyxel.btnp(pyxel.KEY_S):
+    self.opcao_menu=self.opcao_menu+1
+   elif self.opcao_menu==3 and pyxel.btnp(pyxel.KEY_S):
+    self.opcao_menu=1
+   if self.opcao_menu>1 and pyxel.btnp(pyxel.KEY_W):
+    self.opcao_menu=self.opcao_menu-1
+   elif self.opcao_menu==1 and pyxel.btnp(pyxel.KEY_W):
+    self.opcao_menu=3
+   if pyxel.btnp(pyxel.KEY_RETURN):
+    if self.opcao_menu==1:
+     self.state="jogo"
+     self.ret=1
+    if self.opcao_menu==2:
+     self.state="menu"
+    if self.opcao_menu==3:
+     pyxel.quit()
+  if self.state=="jogo":#jogo começa aqui
+   if self.room=="mapa":
+    if self.opcao==0:
+     self.mostrar=0
+    if self.opcao==1:
+     self.mostrar=self.sala1
+    if self.opcao==2:
+     self.mostrar=self.sala2
+    if self.opcao==3:
+     self.mostrar=self.sala3
+    if pyxel.btnp(pyxel.KEY_Q):
+     self.opcao=1
+    if pyxel.btnp(pyxel.KEY_W):
+     self.opcao=2
+    if pyxel.btnp(pyxel.KEY_E):
+     self.opcao=3
+    if pyxel.btnp(pyxel.KEY_S):
+     self.opcao=0
+    if pyxel.btnp(pyxel.KEY_RETURN) and self.ret==0:#sinalizador para n repetir enter
+     if self.mostrar==1:
+      self.enter_battle()
+     if self.mostrar==2:
+      self.enter_evento()
+     if self.mostrar==3:
+      self.enter_loja()
+     if self.mostrar==4:
+      self.enter_elite_battle()
+     if self.mostrar==5:
+      self.aleatorio_a=random.randint(1,4)
+      if self.aleatorio_a==1:
+       self.enter_battle()
+      if self.aleatorio_a==2:
+       self.enter_evento()
+      if self.aleatorio_a==3:
+       self.enter_loja()
+      if self.aleatorio_a==4:
+       self.enter_elite_battle()
+   if self.room=="batalha":
+    if self.turno=="aliado":
+     self.opcao_max=len(self.mao)-1
+     if pyxel.btnp(pyxel.KEY_Q):
+      if self.opcao>0:
+       self.opcao=self.opcao-1
+      else:
+       self.opcao=self.opcao_max
+     if pyxel.btnp(pyxel.KEY_E):
+      if self.opcao<self.opcao_max:
+       self.opcao=self.opcao+1
+      else:
+       self.opcao=0
+     if pyxel.btnp(pyxel.KEY_W):
+      if len(self.mao)>0 and len(self.usando)<(self.max_jogavel*2):
+       self.usando.append(self.mao[self.opcao])
+       self.mao.pop(self.opcao)
+       self.opcao=0
+       self.ret=1
+     if pyxel.btnp(pyxel.KEY_S):
+      self.mao=[]
+      self.usando=[]
+      for i in self.mao_real:
+       self.mao.append(i)
+ def draw(self):#draw
+  if self.state=="menu":
+   pyxel.cls(3)
+   pyxel.text(20,50,"JOGAR",0)
+   pyxel.text(20,60,"DECK",0)
+   pyxel.text(20,70,"SAIR",0)
+   if self.opcao_menu==1:
+    seta(50,50,0)
+   if self.opcao_menu==2:
+    seta(50,60,0)
+   if self.opcao_menu==3:
+    seta(50,70,0)
+  if self.state=="opcoes":
+   pyxel.cls(9)
+  if self.state=="menu_jogo":
+   pyxel.cls(3)
+   pyxel.text(10,50,"CONTINUAR",0)
+   pyxel.text(10,60,"REINICIAR",0)
+   pyxel.text(20,70,"SAIR",0)
+   if self.opcao_menu==1:
+    seta(50,50,0)
+   if self.opcao_menu==2:
+    seta(50,60,0)
+   if self.opcao_menu==3:
+    seta(50,70,0)
+  if self.state=="jogo":
+   if self.room=="mapa":
+    pyxel.cls(1)
+    self.num=str(self.mostrar)#tirar no futuro
+    pyxel.text(20,50,self.num,0)
+    if self.opcao==1:
+     pyxel.tri(40,360,170,360,105,100,16)
+     pyxel.elli(40,340,130,40,5)
+     self.x=105
+     self.y=270
+     self.mostrar=self.sala1
+    if self.opcao==2:
+     pyxel.tri(210,360,340,360,270,100,16)
+     pyxel.elli(210,340,130,40,5)
+     self.x=270
+     self.y=270
+     self.mostrar=self.sala2
+    if self.opcao==3:
+     pyxel.tri(380,360,510,360,440,100,16)
+     pyxel.elli(380,340,130,40,5)
+     self.x=440
+     self.y=270
+     self.mostrar=self.sala3
+    if self.opcao==0:
+     self.mostrar=-1
+    if self.opcao!=0:
+     if self.mostrar==0:
+      pyxel.circ(self.x,self.y,5,1)
+     if self.mostrar==1:
+      pyxel.circ(self.x,self.y,5,2)
+     if self.mostrar==2:
+      pyxel.circ(self.x,self.y,5,3)
+     if self.mostrar==3:
+      pyxel.circ(self.x,self.y,5,4)
+     if self.mostrar==4:
+      pyxel.circ(self.x,self.y,5,5)
+     if self.mostrar==5:
+      pyxel.circ(self.x,self.y,5,6)
+   if self.room=="batalha": #batalhas
+    pyxel.cls(2)
+    if len(self.enemy)==2:
+     pyxel.text(200,150,self.enemy[0],0)
+     pyxel.text(375,150,self.enemy[1],0)
+    if len(self.enemy)==3:
+     pyxel.text(100,150,self.enemy[0],0)
+     pyxel.text(250,150,self.enemy[1],0)
+     pyxel.text(400,150,self.enemy[2],0)
+    if self.turno=="aliado":
+     if len(self.usando)>0:
+      self.x=200
+      for i in self.usando:
+       pyxel.text(self.x,250,i.nome,0)
+       self.x=self.x+30
+     if self.ret==0:
+      if len(self.mao)>4:
+       self.i=self.mao[self.opcao].nome
+       if self.opcao-1==-1:
+        self.e=self.mao[self.opcao_max].nome
+       else:
+        self.e=self.mao[self.opcao-1].nome
+       if self.opcao-2==-2:
+        self.a=self.mao[self.opcao_max-1].nome
+       elif self.opcao-2==-1:
+        self.a=self.mao[self.opcao_max].nome
+       else:
+        self.a=self.mao[self.opcao-2].nome#continua aqui
+       if self.opcao+1==self.opcao_max+1:
+        self.o=self.mao[0].nome
+       else:
+        self.o=self.mao[self.opcao+1].nome
+       if self.opcao+2==self.opcao_max+2:
+        self.u=self.mao[1].nome
+       elif self.opcao+2==self.opcao_max+1:
+        self.u=self.mao[0].nome
+       else:
+        self.u=self.mao[self.opcao+2].nome
+       pyxel.text(200,390,self.a,17)
+       pyxel.text(250,390,self.e,17)
+       pyxel.text(300,390,self.i,17)
+       pyxel.text(350,390,self.o,17)
+       pyxel.text(400,390,self.u,17)
+      else:
+       self.x=200
+       self.y=0
+       for i in self.mao:
+        if self.y==self.opcao:
+         pyxel.text(self.x,375,i.nome,0)
+        else:
+         pyxel.text(self.x,390,i.nome,17)
+        self.x=self.x+50
+        self.y=self.y+1
+   if self.room=="evento":
+    pyxel.cls(3)
+   if self.room=="loja":
+    pyxel.cls(4)
+grito=habilidade(0,"grito")
+corte=habilidade(1,"corte")
+bloquear=habilidade(2,"bloquear")
+surrar=habilidade(3,"surrar")
+encanto=habilidade(4,"encanto")
+missil=habilidade(5,"missil")
+jato=habilidade(6,"jato")
+encharcar=(7,"encharcar")
+luz=habilidade(8,"luz")
+envenenar=habilidade(9,"veneno")
+pedra=(10,"pedra")
+fungo=(11,"fungos")
+espada=arma([corte,grito])
+escudo=arma([bloquear,surrar])
+varinha=arma([encanto,missil])
+jato_D_agua=arma([jato,encharcar])
+e_luz=arma([luz])
+e_veneno=arma([envenenar])
+e_pedra=arma([pedra])
+e_fungos=arma([fungo])
+#efeito:0 nada, 1 veneno,2 petrificar-40% de buffs errarem, 3 cegueira-40% de atks errarem, 4 stun, 5 colecao de esporos(atk-,atk+,def-, def+,ap+,ap-,esquiva,remover1buff,remover1debuff), 6 atack up, 7 def up, 8 atk down, 9 def down, A ap+(6max), B parasitar, C esquiva, D conjunto de buffs(atk,def,esquiva,ap+(6max)), E repetir, 10 dano extra, 11 colecao de debuffs(,atk-,def-,ap-,descuido), 12 duplicar debuffs,13 esporos, 14 purificar. 15 endurecer, 16 roubo de hp, 17 fortalecer-30% dano recebido, 18 ativar dot, 19 remover duracao, 1A corruption- 1.5 dano de dot, 1B transferencia de efeitos, 1C propagar-"30% da carta ter efeitos dobrados", 1D parasitar- 1 escudo ao ativar veneno, 1E imunidade, 20 toxicidade, 21 hype- repete uma carta aleatória no final do turno,22 parry- bloqueia 1 dano,23espinho-24reflete 30% do dano,25respingar,26 fortificar-50% mais escudo,27 intimidar-20% de chance de stun por ataque, 28 enviar efeitos negativos,29-remover buffs,2A endurecer-atk+50%def,def+50%atk,2B remove% de escudo
+corte2=combinacao("corte","1",60,0,0,0,0,0,0,0,0,0,"atk",["atk"])
+grito2=combinacao("grito","self",0,0,"6",100,3,2,0,0,0,0,"atk",["buff"])
+destruir=combinacao("destruir","todos_E",75,0,0,0,0,0,0,0,0,0,"atk",["atk"])
+esmagar=combinacao("esmagar","1",75,0,0,0,0,0,0,0,0,0,"escudo",["atk"])
+bloquear2=combinacao("bloquear","self",0,15,0,0,0,0,0,0,0,0,"def",["buff"])
+surrar2=combinacao("surrar","1",25,0,"4",75,1,1,0,0,0,0,"def",["debuff","atk"])
+encanto2=combinacao("encanto","self",0,0,"D",100,3,2,0,0,0,0,"atk",["buff"])
+missil2=combinacao("missil","1",15,0,"E",100,2,4,0,0,0,0,"atk",["atk"])
+barragem=combinacao("barragem","aleatorio",15,0,"E",100,1,5,"D",80,1,2,"atk",["buff","atk"])
+jato2=combinacao("jato","1",10,0,"10",100,10,1,0,0,0,0,"atk",["atk"])
+encharcar2=combinacao("encharcar","1",0,0,11,100,3,2,0,0,0,0,"atk",["debuff"])
+imundar=combinacao("imundar",1,0,0,12,100,1,1,0,0,0,0,"atk",["debuff"])
+envenar2=combinacao("envenenar",1,0,0,1,100,3,3,0,0,0,0,"atk",["debuff"])
+luz2=combinacao("purificar","self",0,0,14,100,3,1,0,0,0,0,"atk",["buff"])
+pedra2=combinacao("endurecer","self",0,5,15,100,2,1,0,0,0,0,"def",["buff"])
+fungos2=combinacao("felicidade","todos",0,0,5,100,2,2,13,100,1,1,"atk",["buff","debuff"])
+consumir=combinacao("consumir","1",50,0,16,70,1,1,0,0,0,0,"atk+def/2",["atk","buff"])
+fortalecer=combinacao("fortalecer","self",0,25,17,100,1,2,0,0,0,0,"atk",["buff"])
+ativador=combinacao("ativador","1",0,0,18,100,2,1,19,100,1,1,"atk",["debuff"])
+corromper=combinacao("corromper","1",0,0,"1A",100,1,2,0,0,0,0,"atk",["debuff"])
+curse=combinacao("amaldicoar","1",0,0,"1B",100,"random",1,0,0,0,0,"atk",["debuff"])
+propagar=combinacao("propagar","self",0,0,"1C",100,1,2,0,0,0,0,"atk",["buff"])
+cegar=combinacao("cegar","1",0,0,"3",100,1,2,0,0,0,0,"atk",["debuff"])
+parasitar=combinacao("parasitar","self",0,0,"1D",100,1,2,0,0,0,0,"def",["buff"])
+bencao=combinacao("bencao","todos_E",0,0,"29",100,2,1,0,0,0,0,"atk",["debuff"])
+toxicidade=combinacao("toxicidade","self","20",0,0,100,1,2,0,0,0,0,"atk",["buff"])
+meteoritos=combinacao("meteoritos","random",10,0,"E",100,1,3,"4",60,1,1,"def",["atk","debuff"])
+animar=combinacao("animar","self",0,0,"21",100,1,2,0,0,0,0,"atk",["buff"])
+chuva=combinacao("chuva toxica","random",5,0,"E",100,1,4,"1",100,1,2,"atk",["atk","debuff"])
+barreira=combinacao("barreira","self",0,0,"22",100,1,1,0,0,0,0,"def",["buff"])
+expurgo=combinacao("expurgo","1",40,0,"18",100,1,0,0,0,0,0,"atk",["atk","debuff"])
+cobertura=combinacao("cobertuta","self",0,5,"23",100,1,2,0,0,0,0,"def",["buff"])
+respingo=combinacao("respingo","self",0,"5","25",100,1,2,0,0,0,0,"def",["buff"])
+fortificar=combinacao("fortificar","self",0,5,"26",100,1,2,0,0,0,0,"def",["buff"])
+intimidar=combinacao("intimidar","self",0,0,"27",100,1,2,0,0,0,0,"atk",["buff"])
+raios=combinacao("raios","1",1,0,"E",100,1,4,"10",100,5,1,"atk",["atk"])
+transferencia=combinacao("transferencia","1",20,0,"28",100,2,1,0,0,0,0,"atk",["atk","buff","debuff"])
+rebater=combinacao("rebater","1",50,0,"28",100,1,1,0,0,0,0,"atk",["atk","buff","debuff"])
+converter=combinacao("converter","self",0,12,"14",75,2,1,0,0,0,0,"def",["buff"])
+impenetravel=combinacao("impenetravel","self",0,0,"1E",100,1,2,0,0,0,0,"def",["buff"])
+estrela=combinacao("estrelas cadentes","random",5,0,"E",100,1,3,"29",100,1,1,"atk",["atk","debuff"])
+pressao=combinacao("alta pressao","1",7,0,"10",100,7,1,0,0,0,0,"def",["atk"])
+pedrada=combinacao("pedrada","1",40,0,4,100,1,1,0,0,0,0,"def",["atk","deff"])
+petrificar=combinacao("petrificar","1",0,0,"3",100,1,2,0,0,0,0,"atk",["debuff"])
+endurecer=combinacao("endurecer","self",0,0,"2A",100,1,2,0,0,0,0,"atk",["buff"])
+quebrar=combinacao("quebrar","1",40,0,"2B",100,50,1,0,0,0,0,"atk",["atk"])
+corroer=combinacao("corroer","1",0,0,"2B",100,75,1,0,0,0,0,"atk",["atk"]
+metralhar=combinacao("metralhar","random",0,0,"E",100,2,5,"11",100,1,2,"atk",["debuff"])
+tremor=combinacao("tremor","todos_E",30,0,0,0,0,0,0,0,0,0,"atk+def/2",["atk"])
+granizo=combinacao("granizo","random",0,0,"E",100,2,7,"2B",100,10,1,"atk",["atk"])
+esplosao=combinacao(""
+inimigo=["fada","goblin","cogumelo","morcego","esqueleto","pessoa_cogumelo"]#combinacoes acabam aqui
+inimigo_elite=["golem","demonio","slime","sombra","armadura","bicho_abstrato"]
+items=["moeda","estilingue",]
+jogo()
+lista_ataque=[[corte2,destruir,consumir,tremor,"1.5","1.6","1.7","1.8",rebater,expurgo,quebrar,"1.13"],[destruir,grito2,intimidar,fortalecer,"2.5","2.6","2.7","2.8",bencao,toxicidade,endurecer,"2.13"],[consumir,fortalecer,bloquear2,esmagar,barreira,"3.6","3.7",cobertura,impenetravel,parasitar,fortificar,"3.13"],[tremor,intimidar,esmagar,surrar2,"4.5",meteoritos,pressao,"4.8",converter,respingo,pedrada,"4.13"],["5.1","5.2",barreira,"5.4",encanto2,barragem,"5.7",propagar,animar,curse,"5.12","5,13"],["6.1","6.2","6.3",meteoritos,barragem,missil2,raios,metralhar,estrela,chuva,granizo,"6,13"],["7.1","7.2","7.3",pressao,"7.5",raios,jato2,imundar,transferencia,ativador,corroer,"7.13"],["8.1","8.2",cobertura,"8.4",propagar,metralhar,imundar,encharcar2,cegar,corromper,petrificar,"8,13"],[rebater,bencao,impenetravel,converter,animar,estrela,transferencia,cegar,luz2,"9.10","9.11","9.12","9.13"],[expurgo,toxicidade,parasitar,respingo,curse,chuva,ativador,corromper,"10.9",envenenar,"10.12","10.13"],[quebrar,endurecer,fortificar,pedrada,"11.5",granizo,corroer,"11.8","11.9","12.10",pedra2,"12.13"],["13.1","13.2","13.3","13.4","13.5","13.6","13.7","13.8","13.9","13.10","13.12",fungos2]]
